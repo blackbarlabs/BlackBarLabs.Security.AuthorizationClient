@@ -3,15 +3,19 @@ using System;
 using System.Configuration;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization;
 
 namespace BlackBarLabs.Security.AuthorizationClient
 {
     public static class Authorizations
     {
+        [DataContract]
         private class Authorization : IAuthorization
         {
+            [DataMember]
             public CredentialsType[] CredentialProviders { get; set; }
 
+            [DataMember]
             public Guid Id { get; set; }
         }
 
