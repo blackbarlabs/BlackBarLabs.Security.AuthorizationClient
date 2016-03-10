@@ -1,4 +1,5 @@
-﻿using BlackBarLabs.Security.Authorization;
+﻿using BlackBarLabs.Core.Web;
+using BlackBarLabs.Security.Authorization;
 using System;
 using System.Configuration;
 using System.IO;
@@ -20,31 +21,35 @@ namespace BlackBarLabs.Security.AuthorizationClient
             public Guid Id { get; set; }
         }
 
-        public async static Task CreateImplicitVoucherAsync(Guid authId, string password)
+        private static WebRequest GetRequest()
         {
             var authServerLocation = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationClient.ServerUrl"];
-            
-            var trustedVoucherProverId = CredentialProvider.Voucher.Utilities.GetTrustedProviderId();
-            var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + TimeSpan.FromMinutes(10.0));
+            var webRequest = WebRequest.Create(authServerLocation + "/api/Authorization");
+            return webRequest;
+        }
 
-            var credentialVoucher = new CredentialsType
-            {
-                Method = CredentialValidationMethodTypes.Voucher,
-                Provider = trustedVoucherProverId,
-                Token = token,
-                UserId = authId.ToString("N"),
-            };
+        public async static Task CreateImplicitVoucherAsync(Guid authId, Uri providerId, string username, string password, TimeSpan voucherDuration)
+        {
             var credentialImplicit = new CredentialsType
             {
                 Method = CredentialValidationMethodTypes.Implicit,
-                Provider = new Uri("http://www.example.com/Auth"),
+                Provider = providerId,
                 Token = password,
+                UserId = username,
+            };
+            
+            var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + voucherDuration);
+            var credentialVoucher = new CredentialsType
+            {
+                Method = CredentialValidationMethodTypes.Voucher,
+                Provider = providerId,
+                Token = token,
                 UserId = authId.ToString("N"),
             };
 
             var auth = new Authorization()
             {
-                Id = Guid.NewGuid(),
+                Id = authId,
                 CredentialProviders = new CredentialsType []
                 {
                     credentialVoucher,
@@ -52,25 +57,10 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 }
             };
 
-            var authJson = Newtonsoft.Json.JsonConvert.SerializeObject(auth);
-
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(authServerLocation + "/api/Authorization");
-            httpWebRequest.ContentType = "text/json";
-            httpWebRequest.Method = "POST";
-            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-            {
-                streamWriter.Write(authJson);
-                streamWriter.Flush();
-            }
-            try
-            {
-                var createAuthResponse = ((HttpWebResponse)(await httpWebRequest.GetResponseAsync()));
-            } catch(WebException ex)
-            {
-                var httpResponse = (HttpWebResponse)ex.Response;
-                var responseText = new System.IO.StreamReader(httpResponse.GetResponseStream()).ReadToEnd();
-                throw ex;
-            }
+            var webRequest = GetRequest();
+            await webRequest.PostAsync(auth,
+                (response) => true,
+                (code, response) => false);
         }
     }
 }
