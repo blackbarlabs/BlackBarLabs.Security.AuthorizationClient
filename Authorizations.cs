@@ -62,8 +62,15 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 streamWriter.Write(authJson);
                 streamWriter.Flush();
             }
-            var createAuthResponse = ((HttpWebResponse)(await httpWebRequest.GetResponseAsync()));
-
+            try
+            {
+                var createAuthResponse = ((HttpWebResponse)(await httpWebRequest.GetResponseAsync()));
+            } catch(WebException ex)
+            {
+                var httpResponse = (HttpWebResponse)ex.Response;
+                var responseText = new System.IO.StreamReader(httpResponse.GetResponseStream()).ReadToEnd();
+                throw ex;
+            }
         }
     }
 }
