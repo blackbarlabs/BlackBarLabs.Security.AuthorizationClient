@@ -3,7 +3,11 @@ using System;
 using System.Configuration;
 using System.IO;
 using System.Net;
+<<<<<<< HEAD
 using System.Runtime.Serialization;
+=======
+using System.Threading.Tasks;
+>>>>>>> e47a450174ec69d0a1579e416c898ab2df5bc8b2
 
 namespace BlackBarLabs.Security.AuthorizationClient
 {
@@ -19,7 +23,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             public Guid Id { get; set; }
         }
 
-        public static void CreateImplicitVoucherAsync(Guid authId, string password)
+        public async static Task CreateImplicitVoucherAsync(Guid authId, string password)
         {
             var authServerLocation = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationClient.ServerUrl"];
             
@@ -37,7 +41,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             {
                 Method = CredentialValidationMethodTypes.Implicit,
                 Provider = new Uri("http://www.example.com/Auth"),
-                Token = "Password#1",
+                Token = password,
                 UserId = authId.ToString("N"),
             };
 
@@ -61,7 +65,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 streamWriter.Write(authJson);
                 streamWriter.Flush();
             }
-            var createAuthResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            var createAuthResponse = ((HttpWebResponse)(await httpWebRequest.GetResponseAsync()));
 
         }
     }
