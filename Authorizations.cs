@@ -3,16 +3,23 @@ using System;
 using System.Configuration;
 using System.IO;
 using System.Net;
+<<<<<<< HEAD
+using System.Runtime.Serialization;
+=======
 using System.Threading.Tasks;
+>>>>>>> e47a450174ec69d0a1579e416c898ab2df5bc8b2
 
 namespace BlackBarLabs.Security.AuthorizationClient
 {
     public static class Authorizations
     {
+        [DataContract]
         private class Authorization : IAuthorization
         {
+            [DataMember]
             public CredentialsType[] CredentialProviders { get; set; }
 
+            [DataMember]
             public Guid Id { get; set; }
         }
 
