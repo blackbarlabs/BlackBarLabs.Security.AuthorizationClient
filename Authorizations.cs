@@ -3,11 +3,8 @@ using System;
 using System.Configuration;
 using System.IO;
 using System.Net;
-<<<<<<< HEAD
 using System.Runtime.Serialization;
-=======
 using System.Threading.Tasks;
->>>>>>> e47a450174ec69d0a1579e416c898ab2df5bc8b2
 
 namespace BlackBarLabs.Security.AuthorizationClient
 {
