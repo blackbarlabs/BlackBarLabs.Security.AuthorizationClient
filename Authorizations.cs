@@ -15,6 +15,9 @@ namespace BlackBarLabs.Security.AuthorizationClient
         private class Authorization : IAuthorization
         {
             [DataMember]
+            public Uri[] ClaimsProviders { get; set; }
+
+            [DataMember]
             public CredentialsType[] CredentialProviders { get; set; }
 
             [DataMember]
@@ -28,7 +31,9 @@ namespace BlackBarLabs.Security.AuthorizationClient
             return webRequest;
         }
 
-        public async static Task CreateImplicitVoucherAsync(Guid authId, Uri providerId, string username, string password, TimeSpan voucherDuration)
+        public async static Task<T> CreateImplicitVoucherAsync<T>(Guid authId, Uri providerId,
+            string username, string password, TimeSpan voucherDuration,
+            Func<T> onSuccess, Func<string, T> onFailure)
         {
             var credentialImplicit = new CredentialsType
             {
@@ -58,9 +63,9 @@ namespace BlackBarLabs.Security.AuthorizationClient
             };
 
             var webRequest = GetRequest();
-            await webRequest.PostAsync(auth,
-                (response) => true,
-                (code, response) => false);
+            return await webRequest.PostAsync(auth,
+                (response) => onSuccess(),
+                (code, response) => onFailure(response));
         }
     }
 }
