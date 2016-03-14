@@ -57,7 +57,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             await webRequest.PostAsync(session, (response) => true, (responseCode, response) => false);
         }
         
-        public async static Task CreateWithImplicitAsync(Guid authId, Uri providerId, string username, string password)
+        public async static Task<string> CreateWithImplicitAsync(Guid authId, Uri providerId, string username, string password)
         {
             var credentialImplicit = new CredentialsType
             {
@@ -75,7 +75,14 @@ namespace BlackBarLabs.Security.AuthorizationClient
             };
 
             var webRequest = GetRequest();
-            await webRequest.PostAsync(session, (response) => true, (responseCode, response) => false);
+            return await webRequest.PostAsync(session,
+                (response) =>
+                {
+                    var responseText = new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd();
+                    var responseSession = Newtonsoft.Json.JsonConvert.DeserializeObject<Session>(responseText);
+                    return responseSession.SessionHeader.Value;
+                },
+                (responseCode, response) => default(string));
         }
     }
 }

@@ -2,7 +2,6 @@
 using BlackBarLabs.Security.Authorization;
 using System;
 using System.Configuration;
-using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -32,7 +31,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         }
 
         public async static Task<T> CreateImplicitVoucherAsync<T>(Guid authId, Uri providerId,
-            string username, string password, TimeSpan voucherDuration,
+            string username, string password, TimeSpan voucherDuration, Uri claimsLocation,
             Func<T> onSuccess, Func<string, T> onFailure)
         {
             var credentialImplicit = new CredentialsType
@@ -41,6 +40,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Provider = providerId,
                 Token = password,
                 UserId = username,
+                ClaimsProviders = new Uri [] { claimsLocation },
             };
             
             var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + voucherDuration);
@@ -50,6 +50,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Provider = providerId,
                 Token = token,
                 UserId = authId.ToString("N"),
+                ClaimsProviders = new Uri[] { claimsLocation },
             };
 
             var auth = new Authorization()
