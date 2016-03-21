@@ -20,7 +20,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             public Guid AuthorizationId { get; set; }
 
             [DataMember]
-            public CredentialsType Credentials { get; set; }
+            public ICredential Credentials { get; set; }
             
             [DataMember]
             public string RefreshToken { get; set; }
@@ -38,7 +38,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
 
         public async static Task CreateWithVoucherAsync(Guid authId, Uri providerId, string authToken)
         {
-            var credentialVoucher = new CredentialsType
+            var credentialVoucher = new Credentials.Credential
             {
                 Method = CredentialValidationMethodTypes.Voucher,
                 Provider = providerId,
@@ -59,7 +59,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         
         public async static Task<string> CreateWithImplicitAsync(Guid authId, Uri providerId, string username, string password)
         {
-            var credentialImplicit = new CredentialsType
+            var credentialImplicit = new Credentials.Credential
             {
                 Method = CredentialValidationMethodTypes.Implicit,
                 Provider = providerId,
