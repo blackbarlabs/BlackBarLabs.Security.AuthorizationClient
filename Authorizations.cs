@@ -14,7 +14,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         private class Authorization : IAuthorization
         {
             [DataMember]
-            public CredentialsType[] CredentialProviders { get; set; }
+            public Uri[] CredentialProviders { get; set; }
 
             [DataMember]
             public Guid Id { get; set; }
@@ -45,11 +45,11 @@ namespace BlackBarLabs.Security.AuthorizationClient
             var auth = new Authorization()
             {
                 Id = Guid.NewGuid(),
-                CredentialProviders = new CredentialsType []
-                {
-                    credentialVoucher,
-                    credentialImplicit,
-                }
+                //CredentialProviders = new CredentialsType []
+                //{
+                //    credentialVoucher,
+                //    credentialImplicit,
+                //}
             };
 
             var authJson = Newtonsoft.Json.JsonConvert.SerializeObject(auth);
