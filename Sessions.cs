@@ -1,76 +1,88 @@
-﻿using BlackBarLabs.Security.Authorization;
+﻿using BlackBarLabs.Core.Web;
+using BlackBarLabs.Security.Authorization;
 using System;
 using System.Configuration;
-using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace BlackBarLabs.Security.AuthorizationClient
 {
-    public static class SessionsSession
+    public static class Sessions
     {
         [DataContract]
         private class Session : ISession
         {
             [DataMember]
-            public CredentialsType[] CredentialProviders { get; set; }
+            public Guid Id { get; set; }
 
             [DataMember]
-            public Guid Id { get; set; }
+            public Guid AuthorizationId { get; set; }
+
+            [DataMember]
+            public ICredential Credentials { get; set; }
+            
+            [DataMember]
+            public string RefreshToken { get; set; }
+
+            [DataMember]
+            public AuthHeaderProps SessionHeader { get; set; }
         }
 
-        public async static Task CreateImplicitVoucherAsync(Guid authId, string password)
+        private static WebRequest GetRequest()
         {
             var authServerLocation = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationClient.ServerUrl"];
-            
-            var trustedVoucherProverId = CredentialProvider.Voucher.Utilities.GetTrustedProviderId();
-            var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + TimeSpan.FromMinutes(10.0));
+            var webRequest = WebRequest.Create(authServerLocation + "/api/Session");
+            return webRequest;
+        }
 
-            var credentialVoucher = new CredentialsType
+        public async static Task CreateWithVoucherAsync(Guid authId, Uri providerId, string authToken)
+        {
+            var credentialVoucher = new Credentials.Credential
             {
                 Method = CredentialValidationMethodTypes.Voucher,
-                Provider = trustedVoucherProverId,
-                Token = token,
-                UserId = authId.ToString("N"),
-            };
-            var credentialImplicit = new CredentialsType
-            {
-                Method = CredentialValidationMethodTypes.Implicit,
-                Provider = new Uri("http://www.example.com/Auth"),
-                Token = password,
+                Provider = providerId,
+                Token = authToken,
                 UserId = authId.ToString("N"),
             };
 
-            var auth = new Authorization()
+            var session = new Session()
             {
                 Id = Guid.NewGuid(),
-                CredentialProviders = new CredentialsType []
-                {
-                    credentialVoucher,
-                    credentialImplicit,
-                }
+                AuthorizationId = authId,
+                Credentials = credentialVoucher,
             };
 
-            var authJson = Newtonsoft.Json.JsonConvert.SerializeObject(auth);
+            var webRequest = GetRequest();
+            await webRequest.PostAsync(session, (response) => true, (responseCode, response) => false);
+        }
+        
+        public async static Task<string> CreateWithImplicitAsync(Guid authId, Uri providerId, string username, string password)
+        {
+            var credentialImplicit = new Credentials.Credential
+            {
+                Method = CredentialValidationMethodTypes.Implicit,
+                Provider = providerId,
+                Token = password,
+                UserId = username,
+            };
 
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(authServerLocation + "/api/Authorization");
-            httpWebRequest.ContentType = "text/json";
-            httpWebRequest.Method = "POST";
-            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+            var session = new Session()
             {
-                streamWriter.Write(authJson);
-                streamWriter.Flush();
-            }
-            try
-            {
-                var createAuthResponse = ((HttpWebResponse)(await httpWebRequest.GetResponseAsync()));
-            } catch(WebException ex)
-            {
-                var httpResponse = (HttpWebResponse)ex.Response;
-                var responseText = new System.IO.StreamReader(httpResponse.GetResponseStream()).ReadToEnd();
-                throw ex;
-            }
+                Id = Guid.NewGuid(),
+                AuthorizationId = authId,
+                Credentials = credentialImplicit,
+            };
+
+            var webRequest = GetRequest();
+            return await webRequest.PostAsync(session,
+                (response) =>
+                {
+                    var responseText = new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd();
+                    var responseSession = Newtonsoft.Json.JsonConvert.DeserializeObject<Session>(responseText);
+                    return responseSession.SessionHeader.Value;
+                },
+                (responseCode, response) => default(string));
         }
     }
 }
