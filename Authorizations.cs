@@ -40,36 +40,5 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 (response) => onSuccess(),
                 (code, response) => onFailure(response));
         }
-
-        public delegate T CreateVoucherCredentialDelegate<T>();
-        public delegate T CreateImplicitCredentialDelegate<T>();
-        public delegate TResult CreateSuccessDelegate<TResult, TResultVoucher, TResultImplicit>(
-            CreateVoucherCredentialDelegate<TResultVoucher> createVoucher, CreateImplicitCredentialDelegate<TResultImplicit> createImplicit);
-        public static async Task CreateAsync<TResult, TResultVoucher, TResultImplicit>(Guid authId,
-            CreateSuccessDelegate<TResult, TResultVoucher, TResultImplicit> success, Func<string, TResult> failure)
-        {
-            var auth = new Authorization()
-            {
-                Id = authId,
-                CredentialProviders = new CredentialsType[] { }
-            };
-            
-            var webRequest = GetRequest();
-            return await webRequest.PostAsync(auth,
-                (response) => success(
-                    () => CreateVoucherAsync(authId)),
-                (code, response) => failure(response));
-        }
-
-        public static async Task<TResult> CreateVoucherAsync<TResult>(Guid authId)
-        {
-
-        }
-
-        public static string GenerateToken(Guid authId, TimeSpan voucherDuration)
-        {
-            var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + voucherDuration);
-            return token;
-        }
     }
 }
