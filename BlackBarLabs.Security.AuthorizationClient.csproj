@@ -46,7 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Claims.cs" />
+    <Compile Include="IContext.cs" />
+    <Compile Include="Context.cs" />
     <Compile Include="Credentials.cs" />
+    <Compile Include="MockContext.cs" />
+    <Compile Include="ServicePropertyDefinitions.cs" />
     <Compile Include="Sessions.cs" />
     <Compile Include="Authorizations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
