@@ -1,4 +1,5 @@
-﻿using BlackBarLabs.Core.Web;
+﻿using BlackBarLabs.Core;
+using BlackBarLabs.Core.Web;
 using BlackBarLabs.Security.Authorization;
 using System;
 using System.Configuration;
@@ -36,8 +37,24 @@ namespace BlackBarLabs.Security.AuthorizationClient
             return webRequest;
         }
 
-        public async static Task CreateWithVoucherAsync(Guid authId, Uri providerId, string authToken)
+        private async static Task<string> FetchSessionToken(Session session)
         {
+
+            var webRequest = GetRequest();
+            return await webRequest.PostAsync(session,
+                (response) =>
+                {
+                    var responseText = new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd();
+                    var responseSession = Newtonsoft.Json.JsonConvert.DeserializeObject<Session>(responseText);
+                    return responseSession.SessionHeader.Value;
+                },
+                (responseCode, response) => default(string));
+        }
+
+        public async static Task<string> CreateWithVoucherAsync(Guid authId, string authToken)
+        {
+            var providerId = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Voucher.provider"].ToUri();
+
             var credentialVoucher = new Credentials.Credential
             {
                 Method = CredentialValidationMethodTypes.Voucher,
@@ -49,16 +66,16 @@ namespace BlackBarLabs.Security.AuthorizationClient
             var session = new Session()
             {
                 Id = Guid.NewGuid(),
-                AuthorizationId = authId,
                 Credentials = credentialVoucher,
             };
 
-            var webRequest = GetRequest();
-            await webRequest.PostAsync(session, (response) => true, (responseCode, response) => false);
+            return await FetchSessionToken(session);
         }
         
-        public async static Task<string> CreateWithImplicitAsync(Uri providerId, string username, string password)
+        public async static Task<string> CreateWithImplicitAsync(string username, string password)
         {
+            var providerId = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Implicit.provider"].ToUri();
+
             var credentialImplicit = new Credentials.Credential
             {
                 Method = CredentialValidationMethodTypes.Implicit,
@@ -73,15 +90,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Credentials = credentialImplicit,
             };
 
-            var webRequest = GetRequest();
-            return await webRequest.PostAsync(session,
-                (response) =>
-                {
-                    var responseText = new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd();
-                    var responseSession = Newtonsoft.Json.JsonConvert.DeserializeObject<Session>(responseText);
-                    return responseSession.SessionHeader.Value;
-                },
-                (responseCode, response) => default(string));
+            return await FetchSessionToken(session);
         }
     }
 }
