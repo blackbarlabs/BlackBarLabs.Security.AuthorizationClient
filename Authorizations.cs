@@ -40,5 +40,21 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 (response) => onSuccess(),
                 (code, response) => onFailure(response));
         }
+
+        public static async Task<TResult> DeleteAsync<TResult>(Guid authId, 
+            Func<TResult> success,
+            Func<HttpStatusCode, string, TResult> failedResponse,
+            Func<TResult> couldNotConnect)
+        {
+            var auth = new Authorization()
+            {
+                Id = authId,
+            };
+
+            var webRequest = GetRequest();
+            return await webRequest.DeleteAsync(auth,
+                (response) => success(),
+                (code, response) => failedResponse(code, response));
+        }
     }
 }
