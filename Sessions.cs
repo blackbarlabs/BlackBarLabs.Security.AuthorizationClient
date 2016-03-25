@@ -30,28 +30,38 @@ namespace BlackBarLabs.Security.AuthorizationClient
             public AuthHeaderProps SessionHeader { get; set; }
         }
 
-        private static WebRequest GetRequest()
+        private static TResult GetRequest<TResult>(Func<WebRequest, TResult> callback)
         {
             var authServerLocation = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationClient.ServerUrl"];
             var webRequest = WebRequest.Create(authServerLocation + "/api/Session");
-            return webRequest;
+            return callback(webRequest);
         }
 
-        private async static Task<string> FetchSessionToken(Session session)
+        private async static Task<TResult> FetchSessionTokenAsync<TResult>(Session session,
+            Func<string, string, TResult> success, Func<string, TResult> failure)
         {
-
-            var webRequest = GetRequest();
-            return await webRequest.PostAsync(session,
-                (response) =>
+            return await GetRequest(
+                async (webRequest) =>
                 {
-                    var responseText = new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd();
-                    var responseSession = Newtonsoft.Json.JsonConvert.DeserializeObject<Session>(responseText);
-                    return responseSession.SessionHeader.Value;
-                },
-                (responseCode, response) => default(string));
+                    return await webRequest.PostAsync(session,
+                        (response) =>
+                        {
+                            var responseText = new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd();
+                            var responseSession = Newtonsoft.Json.JsonConvert.DeserializeObject<Session>(responseText);
+                            if(default(Session) == responseSession ||
+                               default(AuthHeaderProps) == responseSession.SessionHeader)
+                            {
+                                return failure("Response was not a session");
+                            }
+                            return success(responseSession.SessionHeader.Name, responseSession.SessionHeader.Value);
+                        },
+                        (responseCode, response) => failure(response),
+                        (whyFailed) => failure(whyFailed));
+                });
         }
 
-        public async static Task<string> CreateWithVoucherAsync(Guid authId, string authToken)
+        public async static Task<TResult> CreateWithVoucherAsync<TResult>(Guid authId, string authToken,
+            Func<string, string, TResult> success, Func<string, TResult> failure)
         {
             var providerId = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Voucher.provider"].ToUri();
 
@@ -69,10 +79,13 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Credentials = credentialVoucher,
             };
 
-            return await FetchSessionToken(session);
+            return await FetchSessionTokenAsync(session,
+                (headerName, headerValue) => success(headerName, headerValue),
+                (whyFailed) => failure(whyFailed));
         }
         
-        public async static Task<string> CreateWithImplicitAsync(string username, string password)
+        public async static Task<TResult> CreateWithImplicitAsync<TResult>(string username, string password,
+            Func<string, string, TResult> success, Func<string, TResult> failure)
         {
             var providerId = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Implicit.provider"].ToUri();
 
@@ -90,7 +103,9 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Credentials = credentialImplicit,
             };
 
-            return await FetchSessionToken(session);
+            return await FetchSessionTokenAsync(session,
+                (headerName, headerValue) => success(headerName, headerValue),
+                (whyFailed) => failure(whyFailed));
         }
     }
 }

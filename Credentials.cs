@@ -60,7 +60,8 @@ namespace BlackBarLabs.Security.AuthorizationClient
             var webRequest = GetRequest();
             return await webRequest.PostAsync(credentialImplicit,
                 (response) => onSuccess(), // TODO: auth header cookies
-                (code, response) => onFailure(response));
+                (code, response) => onFailure(response),
+                (whyFailed) => onFailure(whyFailed));
         }
 
         public delegate TResult CreateVoucherDelegate<TResult>(string token);
@@ -81,7 +82,8 @@ namespace BlackBarLabs.Security.AuthorizationClient
             var webRequest = GetRequest();
             return await webRequest.PostAsync(credentialVoucher,
                 (response) => onSuccess(token),
-                (code, response) => onFailure(response));
+                (code, response) => onFailure(response),
+                (whyFailed) => onFailure(whyFailed));
         }
     }
 }
