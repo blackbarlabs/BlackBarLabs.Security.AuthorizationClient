@@ -26,7 +26,7 @@ namespace BlackBarLabs.Security.Authorization
             public IDictionary<string, string> Properties { get; set; }
 
             [DataMember]
-            public string Type { get; set; }
+            public Uri Type { get; set; }
 
             [DataMember]
             public string Value { get; set; }

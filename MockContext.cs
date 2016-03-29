@@ -21,7 +21,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         {
             Claims.Add(new Claims.Claim()
             {
-                Type = "exampleClaimType",
+                Type = exampleClaimType,
                 Value = exampleClaimValue,
             });
         }
