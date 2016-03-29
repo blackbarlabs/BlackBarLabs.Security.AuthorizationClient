@@ -1,8 +1,10 @@
 ﻿using BlackBarLabs.Core.Web;
 using BlackBarLabs.Security.Authorization;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
@@ -32,7 +34,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             public string Token { get; set; }
 
             [DataMember]
-            public Uri[] ClaimsProviders { get; set; }
+            public Dictionary<string,string> Claims { get; set; }
 
             #endregion
         }
@@ -45,7 +47,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         }
         
         public async static Task<T> CreateImplicitAsync<T>(Guid authId, Uri providerId,
-            string username, string password, Uri claimsLocation,
+            string username, string password, Dictionary<string, string> claims,
             Func<T> onSuccess, Func<string, T> onFailure)
         {
             var credentialImplicit = new Credential
@@ -55,7 +57,8 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Provider = providerId,
                 Token = password,
                 UserId = username,
-                ClaimsProviders = new Uri[] { claimsLocation },
+                //ClaimsProviders = new Uri[] { claimsLocation },
+                Claims = claims
             };
             var webRequest = GetRequest();
             return await webRequest.PostAsync(credentialImplicit,
@@ -66,7 +69,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
 
         public delegate TResult CreateVoucherDelegate<TResult>(string token);
         public async static Task<T> CreateVoucherAsync<T>(Guid authId, Uri providerId,
-            TimeSpan voucherDuration, Uri claimsLocation,
+            TimeSpan voucherDuration, Dictionary<string, string> claims,
             CreateVoucherDelegate<T> onSuccess, Func<string, T> onFailure)
         {
             var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + voucherDuration);
@@ -77,7 +80,8 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Provider = providerId,
                 Token = token,
                 UserId = authId.ToString("N"),
-                ClaimsProviders = new Uri[] { claimsLocation },
+                //ClaimsProviders = new Uri[] { claimsLocation },
+                Claims = claims
             };
             var webRequest = GetRequest();
             return await webRequest.PostAsync(credentialVoucher,
