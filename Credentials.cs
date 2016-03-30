@@ -1,8 +1,10 @@
 ﻿using BlackBarLabs.Core.Web;
 using BlackBarLabs.Security.Authorization;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
@@ -59,8 +61,9 @@ namespace BlackBarLabs.Security.AuthorizationClient
             };
             var webRequest = GetRequest();
             return await webRequest.PostAsync(credentialImplicit,
-                (response) => onSuccess(),
-                (code, response) => onFailure(response));
+                (response) => onSuccess(), // TODO: auth header cookies
+                (code, response) => onFailure(response),
+                (whyFailed) => onFailure(whyFailed));
         }
 
         public delegate TResult CreateVoucherDelegate<TResult>(string token);
@@ -71,6 +74,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + voucherDuration);
             var credentialVoucher = new Credential
             {
+                AuthorizationId = authId,
                 Method = CredentialValidationMethodTypes.Voucher,
                 Provider = providerId,
                 Token = token,
@@ -80,7 +84,8 @@ namespace BlackBarLabs.Security.AuthorizationClient
             var webRequest = GetRequest();
             return await webRequest.PostAsync(credentialVoucher,
                 (response) => onSuccess(token),
-                (code, response) => onFailure(response));
+                (code, response) => onFailure(response),
+                (whyFailed) => onFailure(whyFailed));
         }
     }
 }

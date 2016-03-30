@@ -1,4 +1,5 @@
-﻿using BlackBarLabs.Core.Web;
+﻿using BlackBarLabs.Core;
+using BlackBarLabs.Core.Web;
 using BlackBarLabs.Security.Authorization;
 using System;
 using System.Configuration;
@@ -29,15 +30,41 @@ namespace BlackBarLabs.Security.AuthorizationClient
             public AuthHeaderProps SessionHeader { get; set; }
         }
 
-        private static WebRequest GetRequest()
+        private static TResult GetRequest<TResult>(Func<WebRequest, TResult> callback)
         {
             var authServerLocation = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationClient.ServerUrl"];
             var webRequest = WebRequest.Create(authServerLocation + "/api/Session");
-            return webRequest;
+            return callback(webRequest);
         }
 
-        public async static Task CreateWithVoucherAsync(Guid authId, Uri providerId, string authToken)
+        private async static Task<TResult> FetchSessionTokenAsync<TResult>(Session session,
+            Func<string, string, TResult> success, Func<string, TResult> failure)
         {
+            return await GetRequest(
+                async (webRequest) =>
+                {
+                    return await webRequest.PostAsync(session,
+                        (response) =>
+                        {
+                            var responseText = new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd();
+                            var responseSession = Newtonsoft.Json.JsonConvert.DeserializeObject<Session>(responseText);
+                            if(default(Session) == responseSession ||
+                               default(AuthHeaderProps) == responseSession.SessionHeader)
+                            {
+                                return failure("Response was not a session");
+                            }
+                            return success(responseSession.SessionHeader.Name, responseSession.SessionHeader.Value);
+                        },
+                        (responseCode, response) => failure(response),
+                        (whyFailed) => failure(whyFailed));
+                });
+        }
+
+        public async static Task<TResult> CreateWithVoucherAsync<TResult>(Guid authId, string authToken,
+            Func<string, string, TResult> success, Func<string, TResult> failure)
+        {
+            var providerId = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Voucher.provider"].ToUri();
+
             var credentialVoucher = new Credentials.Credential
             {
                 Method = CredentialValidationMethodTypes.Voucher,
@@ -49,16 +76,19 @@ namespace BlackBarLabs.Security.AuthorizationClient
             var session = new Session()
             {
                 Id = Guid.NewGuid(),
-                AuthorizationId = authId,
                 Credentials = credentialVoucher,
             };
 
-            var webRequest = GetRequest();
-            await webRequest.PostAsync(session, (response) => true, (responseCode, response) => false);
+            return await FetchSessionTokenAsync(session,
+                (headerName, headerValue) => success(headerName, headerValue),
+                (whyFailed) => failure(whyFailed));
         }
         
-        public async static Task<string> CreateWithImplicitAsync(Uri providerId, string username, string password)
+        public async static Task<TResult> CreateWithImplicitAsync<TResult>(string username, string password,
+            Func<string, string, TResult> success, Func<string, TResult> failure)
         {
+            var providerId = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Implicit.provider"].ToUri();
+
             var credentialImplicit = new Credentials.Credential
             {
                 Method = CredentialValidationMethodTypes.Implicit,
@@ -73,15 +103,9 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Credentials = credentialImplicit,
             };
 
-            var webRequest = GetRequest();
-            return await webRequest.PostAsync(session,
-                (response) =>
-                {
-                    var responseText = new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd();
-                    var responseSession = Newtonsoft.Json.JsonConvert.DeserializeObject<Session>(responseText);
-                    return responseSession.SessionHeader.Value;
-                },
-                (responseCode, response) => default(string));
+            return await FetchSessionTokenAsync(session,
+                (headerName, headerValue) => success(headerName, headerValue),
+                (whyFailed) => failure(whyFailed));
         }
     }
 }
