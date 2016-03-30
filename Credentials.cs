@@ -47,7 +47,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         }
         
         public async static Task<T> CreateImplicitAsync<T>(Guid authId, Uri providerId,
-            string username, string password, Uri claimsLocation,
+            string username, string password,
             Func<T> onSuccess, Func<string, T> onFailure)
         {
             var credentialImplicit = new Credential
@@ -57,7 +57,6 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Provider = providerId,
                 Token = password,
                 UserId = username,
-                ClaimsProviders = new Uri[] { claimsLocation },
             };
             var webRequest = GetRequest();
             return await webRequest.PostAsync(credentialImplicit,
@@ -68,7 +67,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
 
         public delegate TResult CreateVoucherDelegate<TResult>(string token);
         public async static Task<T> CreateVoucherAsync<T>(Guid authId, Uri providerId,
-            TimeSpan voucherDuration, Uri claimsLocation,
+            TimeSpan voucherDuration,
             CreateVoucherDelegate<T> onSuccess, Func<string, T> onFailure)
         {
             var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + voucherDuration);
@@ -79,7 +78,6 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 Provider = providerId,
                 Token = token,
                 UserId = authId.ToString("N"),
-                ClaimsProviders = new Uri[] { claimsLocation },
             };
             var webRequest = GetRequest();
             return await webRequest.PostAsync(credentialVoucher,
