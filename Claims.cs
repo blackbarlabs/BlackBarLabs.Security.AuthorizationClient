@@ -15,15 +15,21 @@ namespace BlackBarLabs.Security.Authorization
         internal class Claim : IClaim
         {
             #region Properties
-            
+
             [DataMember]
-            public string Issuer { get; set; }
+            public Guid AuthorizationId { get; set; }
+
+            [DataMember]
+            public Uri Issuer { get; set; }
 
             [DataMember]
             public string OriginalIssuer { get; set; }
 
             [DataMember]
             public IDictionary<string, string> Properties { get; set; }
+
+            [DataMember]
+            public string Signature { get; set; }
 
             [DataMember]
             public Uri Type { get; set; }
