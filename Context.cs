@@ -10,9 +10,33 @@ namespace BlackBarLabs.Security.AuthorizationClient
 {
     public class Context : IContext
     {
-        public Task<TResult> ClaimsGetAsync<TResult>(Uri claimsLocation, Func<IClaim[], TResult> success, Func<HttpStatusCode, string, TResult> error)
+        public Task<TResult> ClaimGetAsync<TResult>(Guid authorizationId, Uri type,
+            Func<Guid, Uri, string, TResult> success, 
+            Func<TResult> notFound,
+            Func<HttpStatusCode, string, TResult> webFailure, 
+            Func<string, TResult> failure)
         {
-            return Claims.FetchClaimsAsync(claimsLocation, success, (code, message) => error(code, message));
+            return Claims.GetAsync(authorizationId, type,
+                success,
+                notFound,
+                webFailure,
+                failure);
+        }
+
+        public Task<TResult> ClaimPostAsync<TResult>(Guid authorizationId, Uri type, string value,
+            Func<TResult> success,
+            Func<HttpStatusCode, string, TResult> webFailure,
+            Func<string, TResult> failure)
+        {
+            return Claims.PostAsync(authorizationId, type, value,
+                success,
+                webFailure,
+                failure);
+        }
+
+        public Task<TResult> ClaimPutAsync<TResult>(Guid accountId, Uri distributorAdminRole, string value, Func<TResult> success, Func<TResult> notFound, Func<HttpStatusCode, string, TResult> httpError, Func<string, TResult> failure)
+        {
+            throw new NotImplementedException();
         }
     }
 }
