@@ -87,9 +87,9 @@
       <Project>{6e009bb4-a644-43a5-95c7-0a3918f61b04}</Project>
       <Name>BlackBarLabs.Security.Authorization</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BlackBarLabs.Security.CredentialProvider.Voucher\BlackBarLabs.Security.CredentialProvider.Voucher.csproj">
-      <Project>{939b50b2-eae2-454e-ac01-da162da292c6}</Project>
-      <Name>BlackBarLabs.Security.CredentialProvider.Voucher</Name>
+    <ProjectReference Include="..\BlackBarLabs.Security\BlackBarLabs.Security.csproj">
+      <Project>{17a2e027-c32a-41db-9b46-5222d55c0e26}</Project>
+      <Name>BlackBarLabs.Security</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

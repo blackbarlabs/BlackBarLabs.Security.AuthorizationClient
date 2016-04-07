@@ -70,7 +70,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             TimeSpan voucherDuration,
             CreateVoucherDelegate<T> onSuccess, Func<string, T> onFailure)
         {
-            var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + voucherDuration);
+            var token = BlackBarLabs.Security.Tokens.VoucherTools.GenerateToken(authId, DateTime.UtcNow + voucherDuration);
             var credentialVoucher = new Credential
             {
                 AuthorizationId = authId,
