@@ -39,6 +39,35 @@ namespace BlackBarLabs.Security.Authorization
             #endregion
         }
 
+        internal async static Task<TResult> PutAsync<TResult>(Guid authorizationId, Uri type, string value,
+            Func<TResult> success,
+            Func<TResult> notFound,
+            Func<HttpStatusCode, string, TResult> webFailure,
+            Func<string, TResult> failure)
+        {
+            var claim = new Claim()
+            {
+                Id = Guid.NewGuid(),
+                AuthorizationId = authorizationId,
+                Type = type,
+                Value = value,
+            };
+
+            return await GetRequest(
+                async (webRequest) =>
+                {
+                    return await webRequest.PutAsync(claim,
+                        (response) => success(),
+                        (code, response) =>
+                        {
+                            if (HttpStatusCode.NotFound == code)
+                                return notFound();
+                            return webFailure(code, response);
+                        },
+                        (whyFailed) => failure(whyFailed));
+                });
+        }
+
         internal async static Task<TResult> PostAsync<TResult>(Guid authorizationId, Uri type, string value, 
             Func<TResult> success,
             Func<HttpStatusCode, string, TResult> webFailure,

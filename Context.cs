@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BlackBarLabs.Security.Authorization;
 using System.Net;
+using System.Configuration;
 
 namespace BlackBarLabs.Security.AuthorizationClient
 {
@@ -34,34 +35,50 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 failure);
         }
 
-        public Task<TResult> CreateAuthorizationAsync<TResult>(Guid accountId, Func<TResult> onSuccess, Func<string, TResult> onFailure)
+        public Task<TResult> ClaimPutAsync<TResult>(Guid authorizationId, Uri type, string value,
+            Func<TResult> success,
+            Func<TResult> notFound,
+            Func<HttpStatusCode, string, TResult> httpError,
+            Func<string, TResult> failure)
         {
-            throw new NotImplementedException();
+            return Claims.PutAsync(authorizationId, type, value,
+                success,
+                notFound,
+                httpError,
+                failure);
         }
 
-        public Task<TResult> CreateSessionsWithImplicitAsync<TResult>(string username, string password, Func<string, string, TResult> success, Func<string, TResult> failed)
+        public Task<TResult> CreateAuthorizationAsync<TResult>(Guid authorizationId, Func<TResult> onSuccess, Func<string, TResult> onFailure)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid accountId, TimeSpan timeSpan, Func<string, TResult> success, Func<string, TResult> failure)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid accountId, string username, string password, Func<TResult> success, Func<string, TResult> failure)
-        {
-            throw new NotImplementedException();
+            return Authorizations.CreateAsync(authorizationId,
+                onSuccess, onFailure);
         }
 
         public Task<TResult> AuthorizationDeleteAsync<TResult>(Guid id, Func<TResult> success, Func<HttpStatusCode, string, TResult> webFailure, Func<TResult> failure)
         {
-            throw new NotImplementedException();
+            return Authorizations.DeleteAsync(id, success, webFailure, failure);
         }
 
-        public Task<TResult> ClaimPutAsync<TResult>(Guid accountId, Uri distributorAdminRole, string value, Func<TResult> success, Func<TResult> notFound, Func<HttpStatusCode, string, TResult> httpError, Func<string, TResult> failure)
+        public Task<TResult> CreateSessionsWithImplicitAsync<TResult>(string username, string password, Func<string, string, TResult> success, Func<string, TResult> failed)
         {
-            throw new NotImplementedException();
+            return Sessions.CreateWithImplicitAsync(username, password, success, failed);
+        }
+
+        public Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid authorizationId, TimeSpan timeSpan, Func<string, TResult> success, Func<string, TResult> failure)
+        {
+            var voucherProviderString = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Voucher.provider"];
+            var voucherProviderUri = new Uri(voucherProviderString);
+            return Credentials.CreateVoucherAsync(authorizationId, voucherProviderUri, timeSpan,
+                (token) => success(token), failure);
+        }
+
+        public Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid authorizationId, string username, string password,
+            Func<TResult> success, Func<string, TResult> failure)
+        {
+            var implicitProviderString = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Implicit.provider"];
+            var implicitProviderUri = new Uri(implicitProviderString);
+            return Credentials.CreateImplicitAsync(authorizationId, implicitProviderUri, username, password,
+                success, failure);
         }
     }
 }

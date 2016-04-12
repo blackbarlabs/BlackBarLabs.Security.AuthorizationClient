@@ -13,18 +13,18 @@ namespace BlackBarLabs.Security.AuthorizationClient
             Func<HttpStatusCode, string, TResult> webFailure,
             Func<string, TResult> failure);
 
-        Task<TResult> ClaimPutAsync<TResult>(Guid accountId, Uri distributorAdminRole, string value,
+        Task<TResult> ClaimPutAsync<TResult>(Guid authorizationId, Uri distributorAdminRole, string value,
             Func<TResult> success,
             Func<TResult> notFound,
             Func<HttpStatusCode, string, TResult> httpError,
             Func<string, TResult> failure);
 
-        Task<TResult> ClaimPostAsync<TResult>(Guid accountId, Uri distributorAdminRole, string value,
+        Task<TResult> ClaimPostAsync<TResult>(Guid authorizationId, Uri distributorAdminRole, string value,
             Func<TResult> success,
             Func<HttpStatusCode, string, TResult> httpError,
             Func<string, TResult> failure);
 
-        Task<TResult> CreateAuthorizationAsync<TResult>(Guid accountId,
+        Task<TResult> CreateAuthorizationAsync<TResult>(Guid authorizationId,
             Func<TResult> onSuccess,
             Func<string, TResult> onFailure);
 
@@ -32,11 +32,11 @@ namespace BlackBarLabs.Security.AuthorizationClient
             Func<string, string, TResult> success,
             Func<string, TResult> failed);
 
-        Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid accountId, TimeSpan timeSpan,
+        Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid authorizationId, TimeSpan timeSpan,
             Func<string, TResult> success,
             Func<string, TResult> failure);
 
-        Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid accountId, string username, string password,
+        Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid authorizationId, string username, string password,
             Func<TResult> success,
             Func<string, TResult> failure);
         
