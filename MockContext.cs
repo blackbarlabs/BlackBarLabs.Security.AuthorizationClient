@@ -98,7 +98,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             await Task.FromResult(true);
             var authId = userId; // tokenCreds[token];
             var jwtToken = GetToken(authId);
-            return success("authorization", jwtToken);
+            return success("Authorization", jwtToken);
         }
 
         public async Task<TResult> CreateSessionsWithImplicitAsync<TResult>(string username, string password,
@@ -111,7 +111,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 return failed("not found");
             var authId = implicitCreds[key];
             var jwtToken = GetToken(authId);
-            return success("authorization", jwtToken);
+            return success("Authorization", jwtToken);
         }
 
         public Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid accountId, TimeSpan timeSpan,
