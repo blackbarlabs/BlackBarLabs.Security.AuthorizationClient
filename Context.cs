@@ -64,6 +64,11 @@ namespace BlackBarLabs.Security.AuthorizationClient
             return Sessions.CreateWithImplicitAsync(username, password, success, failed);
         }
 
+        public Task<TResult> CreateSessionsWithTokenAsync<TResult>(Guid userId, string token, Func<string, string, TResult> success, Func<string, TResult> failure)
+        {
+            return Sessions.CreateWithVoucherAsync(userId, token, success, failure);
+        }
+
         public Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid authorizationId, TimeSpan timeSpan, Func<string, TResult> success, Func<string, TResult> failure)
         {
             var voucherProviderString = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Voucher.provider"];

@@ -5,12 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using BlackBarLabs.Security.Authorization;
 using System.Net;
+using System.Security.Claims;
 
 namespace BlackBarLabs.Security.AuthorizationClient
 {
     public class MockContext : IContext
     {
-        Dictionary<string, Tuple<Guid, Uri, string>> claims = new Dictionary<string, Tuple<Guid, Uri, string>>();
+        static Dictionary<string, Tuple<Guid, Uri, string>> claims = new Dictionary<string, Tuple<Guid, Uri, string>>();
+        static private Dictionary<string, Guid> implicitCreds = new Dictionary<string, Guid>();
+        static private HashSet<string> usernames = new HashSet<string>();
+        static private Dictionary<string, Guid> tokenCreds = new Dictionary<string, Guid>();
 
         private static string GetClaimKey(Guid authorizationId, Uri type)
         {
@@ -70,33 +74,69 @@ namespace BlackBarLabs.Security.AuthorizationClient
             return Task.FromResult(onSuccess());
         }
 
+        private static string GetToken(Guid authId)
+        {
+            var claimsDefault = (IEnumerable<Claim>)new[] {
+                new Claim(ClaimIds.Session, Guid.NewGuid().ToString()),
+                new Claim(ClaimIds.Authorization, authId.ToString()) };
+            var claims = MockContext.claims
+                .Where(claim => claim.Value.Item1 == authId)
+                .Select(claim => new System.Security.Claims.Claim(claim.Value.Item2.AbsoluteUri, claim.Value.Item3))
+                .Concat(claimsDefault);
+            var jwtToken = BlackBarLabs.Security.Tokens.JwtTools.CreateToken(Guid.NewGuid().ToString(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow + TimeSpan.FromDays(1.0),
+                claims,
+                "AuthServer.issuer",
+                "AuthServer.key");
+            return jwtToken;
+        }
+
+        public async Task<TResult> CreateSessionsWithTokenAsync<TResult>(Guid userId, string token,
+            Func<string, string, TResult> success,
+            Func<string, TResult> faiulre)
+        {
+            await Task.FromResult(true);
+            var authId = userId; // tokenCreds[token];
+            var jwtToken = GetToken(authId);
+            return success("authorization", jwtToken);
+        }
+
         public async Task<TResult> CreateSessionsWithImplicitAsync<TResult>(string username, string password,
             Func<string, string, TResult> success,
             Func<string, TResult> failed)
         {
             await Task.FromResult(true);
-            var claims = new System.Security.Claims.Claim[] { };
-            var jwtToken = BlackBarLabs.Security.Tokens.JwtTools.CreateToken(Guid.NewGuid().ToString(),
-                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow + TimeSpan.FromDays(1.0),
-                claims);
-            return success("Authorization", jwtToken);
+            var key = username + password;
+            if (!implicitCreds.ContainsKey(key))
+                return failed("not found");
+            var authId = implicitCreds[key];
+            var jwtToken = GetToken(authId);
+            return success("authorization", jwtToken);
         }
 
         public Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid accountId, TimeSpan timeSpan,
             Func<string, TResult> success,
             Func<string, TResult> failure)
         {
-            throw new NotImplementedException();
+            var token = Guid.NewGuid().ToString();
+            tokenCreds.Add(token, accountId);
+            return Task.FromResult(success(token));
         }
 
-        public Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid accountId, string username, string password, Func<TResult> success, Func<string, TResult> failure)
+        public async Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid accountId, string username, string password, Func<TResult> success, Func<string, TResult> failure)
         {
-            throw new NotImplementedException();
+            await Task.FromResult(1);
+            var key = username + password;
+            if (usernames.Contains(username))
+                return failure("already exists");
+            usernames.Add(username);
+            implicitCreds[key] = accountId;
+            return success();
         }
 
         public Task<TResult> AuthorizationDeleteAsync<TResult>(Guid id, Func<TResult> success, Func<HttpStatusCode, string, TResult> webFailure, Func<TResult> failure)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(success());
         }
     }
 }

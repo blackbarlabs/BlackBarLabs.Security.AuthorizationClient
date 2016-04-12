@@ -32,6 +32,10 @@ namespace BlackBarLabs.Security.AuthorizationClient
             Func<string, string, TResult> success,
             Func<string, TResult> failed);
 
+        Task<TResult> CreateSessionsWithTokenAsync<TResult>(Guid userId, string token,
+            Func<string, string, TResult> success,
+            Func<string, TResult> failure);
+
         Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid authorizationId, TimeSpan timeSpan,
             Func<string, TResult> success,
             Func<string, TResult> failure);
