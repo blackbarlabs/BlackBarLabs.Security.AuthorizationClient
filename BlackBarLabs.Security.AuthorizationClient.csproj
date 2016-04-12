@@ -71,7 +71,6 @@
     <Compile Include="IContext.cs" />
     <Compile Include="Context.cs" />
     <Compile Include="Credentials.cs" />
-    <Compile Include="LocalContext.cs" />
     <Compile Include="MockContext.cs" />
     <Compile Include="ServicePropertyDefinitions.cs" />
     <Compile Include="Sessions.cs" />
