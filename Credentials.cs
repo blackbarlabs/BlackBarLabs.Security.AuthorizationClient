@@ -65,6 +65,26 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 (whyFailed) => onFailure(whyFailed));
         }
 
+
+        public static async Task<T> UpdateImplicitAsync<T>(Guid authId, Uri providerId,
+            string username, string password,
+            Func<T> onSuccess, Func<string, T> onFailure)
+        {
+            var credentialImplicit = new Credential
+            {
+                AuthorizationId = authId,
+                Method = CredentialValidationMethodTypes.Implicit,
+                Provider = providerId,
+                Token = password,
+                UserId = username,
+            };
+            var webRequest = GetRequest();
+            return await webRequest.PutAsync(credentialImplicit,
+                (response) => onSuccess(), // TODO: auth header cookies
+                (code, response) => onFailure(response),
+                (whyFailed) => onFailure(whyFailed));
+        }
+
         public delegate TResult CreateVoucherDelegate<TResult>(string token);
         public async static Task<T> CreateVoucherAsync<T>(Guid authId, Uri providerId,
             TimeSpan voucherDuration,

@@ -134,6 +134,20 @@ namespace BlackBarLabs.Security.AuthorizationClient
             return success();
         }
 
+        public async Task<TResult> UpdateCredentialImplicitAsync<TResult>(Guid authorizationId, string username, string password, Func<TResult> success,
+            Func<string, TResult> failure)
+        {
+            await Task.FromResult(1);
+            var key = username + password;
+            //TODO: Revisit this. We probably need to pull out the old one
+            //TODO: but we'd need the old password to do it
+            //if (usernames.Contains(username))
+            //    return failure("already exists");
+            usernames.Add(username);
+            implicitCreds[key] = authorizationId;
+            return success();
+        }
+
         public Task<TResult> AuthorizationDeleteAsync<TResult>(Guid id, Func<TResult> success, Func<HttpStatusCode, string, TResult> webFailure, Func<TResult> failure)
         {
             return Task.FromResult(success());
