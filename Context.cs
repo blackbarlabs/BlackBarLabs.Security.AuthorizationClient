@@ -78,12 +78,16 @@ namespace BlackBarLabs.Security.AuthorizationClient
         }
 
         public Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid authorizationId, string username, string password,
-            Func<TResult> success, Func<string, TResult> failure)
+            Func<TResult> success,
+            Func<Uri, TResult> alreadyExists,
+            Func<string, TResult> failure)
         {
             var implicitProviderString = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Implicit.provider"];
             var implicitProviderUri = new Uri(implicitProviderString);
             return Credentials.CreateImplicitAsync(authorizationId, implicitProviderUri, username, password,
-                success, failure);
+                success,
+                alreadyExists,
+                failure);
         }
 
         public Task<TResult> UpdateCredentialImplicitAsync<TResult>(Guid authorizationId, string username, string password,

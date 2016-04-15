@@ -46,9 +46,11 @@ namespace BlackBarLabs.Security.AuthorizationClient
             return webRequest;
         }
         
-        public async static Task<T> CreateImplicitAsync<T>(Guid authId, Uri providerId,
+        public async static Task<TResult> CreateImplicitAsync<TResult>(Guid authId, Uri providerId,
             string username, string password,
-            Func<T> onSuccess, Func<string, T> onFailure)
+            Func<TResult> onSuccess,
+            Func<Uri, TResult> alreadyExists,
+            Func<string, TResult> onFailure)
         {
             var credentialImplicit = new Credential
             {
@@ -61,11 +63,19 @@ namespace BlackBarLabs.Security.AuthorizationClient
             var webRequest = GetRequest();
             return await webRequest.PostAsync(credentialImplicit,
                 (response) => onSuccess(), // TODO: auth header cookies
-                (code, response) => onFailure(response),
+                (code, response) =>
+                {
+                    if(code == HttpStatusCode.Conflict)
+                    {
+                        Uri location;
+                        if (Uri.TryCreate(response, UriKind.Absolute, out location))
+                            return alreadyExists(location);
+                    }
+                    return onFailure(response);
+                },
                 (whyFailed) => onFailure(whyFailed));
         }
-
-
+        
         public static async Task<T> UpdateImplicitAsync<T>(Guid authId, Uri providerId,
             string username, string password,
             Func<T> onSuccess, Func<string, T> onFailure)

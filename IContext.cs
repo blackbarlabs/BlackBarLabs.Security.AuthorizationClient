@@ -42,6 +42,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
 
         Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid authorizationId, string username, string password,
             Func<TResult> success,
+            Func<Uri, TResult> alreadyExists,
             Func<string, TResult> failure);
 
         Task<TResult> UpdateCredentialImplicitAsync<TResult>(Guid authorizationId, string username, string password,

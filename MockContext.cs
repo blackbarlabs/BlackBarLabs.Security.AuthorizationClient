@@ -123,12 +123,17 @@ namespace BlackBarLabs.Security.AuthorizationClient
             return Task.FromResult(success(token));
         }
 
-        public async Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid accountId, string username, string password, Func<TResult> success, Func<string, TResult> failure)
+        public async Task<TResult> CreateCredentialImplicitAsync<TResult>(Guid accountId, string username, string password,
+            Func<TResult> success, 
+            Func<Uri, TResult> alreadyExists,
+            Func<string, TResult> failure)
         {
             await Task.FromResult(1);
-            var key = username + password;
+
             if (usernames.Contains(username))
-                return failure("already exists");
+                return alreadyExists(new Uri("http://example.com/" + username));
+
+            var key = username + password;
             usernames.Add(username);
             implicitCreds[key] = accountId;
             return success();
