@@ -87,7 +87,9 @@ namespace BlackBarLabs.Security.Authorization
                     return await webRequest.PostAsync(claim,
                         (response) => success(),
                         (code, response) => webFailure(code, response),
-                        (whyFailed) => failure(whyFailed));
+                        (whyFailed) => failure(String.Format(
+                            "POST [{0}] failed with message -- {4}", 
+                            webRequest.RequestUri, authorizationId, type, value, whyFailed)));
                 });
         }
         
