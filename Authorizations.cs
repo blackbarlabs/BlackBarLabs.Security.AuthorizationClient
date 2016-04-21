@@ -38,8 +38,12 @@ namespace BlackBarLabs.Security.AuthorizationClient
             var webRequest = GetRequest();
             return await webRequest.PostAsync(auth,
                 (response) => onSuccess(),
-                (code, response) => onFailure(response),
-                (whyFailed) => onFailure(whyFailed));
+                (code, response) => onFailure(String.Format(
+                            "POST [{0}] failed with message:[{1}] -- {2}",
+                            webRequest.RequestUri, code, response)),
+                (whyFailed) => onFailure(String.Format(
+                            "POST [{0}] failed with message -- {1}",
+                            webRequest.RequestUri, whyFailed)));
         }
 
         public static async Task<TResult> DeleteAsync<TResult>(Guid authId, 
