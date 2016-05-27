@@ -7,6 +7,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure;
 
 namespace BlackBarLabs.Security.AuthorizationClient
 {
@@ -41,7 +42,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
 
         private static WebRequest GetRequest()
         {
-            var authServerLocation = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationClient.ServerUrl"];
+            var authServerLocation =  CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
             var webRequest = WebRequest.Create(authServerLocation + "/api/Credential");
             return webRequest;
         }

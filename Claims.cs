@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using BlackBarLabs.Core;
+using Microsoft.WindowsAzure;
 
 namespace BlackBarLabs.Security.Authorization
 {
@@ -97,14 +98,14 @@ namespace BlackBarLabs.Security.Authorization
         
         private static TResult GetRequest<TResult>(Func<WebRequest, TResult> callback)
         {
-            var authServerLocation = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationClient.ServerUrl"];
+            var authServerLocation =  CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
             var webRequest = WebRequest.Create(authServerLocation + "/api/Claim");
             return callback(webRequest);
         }
 
         private static TResult GetRequest<TQuery, TResult>(TQuery query, Func<WebRequest, TResult> callback)
         {
-            var authServerLocation = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationClient.ServerUrl"];
+            var authServerLocation =  CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
             
             var uriBuilder = new UriBuilder(authServerLocation);
             uriBuilder.Path = "/api/Claim";

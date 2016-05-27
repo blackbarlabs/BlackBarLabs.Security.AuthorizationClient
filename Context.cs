@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BlackBarLabs.Security.Authorization;
 using System.Net;
 using System.Configuration;
+using Microsoft.WindowsAzure;
 
 namespace BlackBarLabs.Security.AuthorizationClient
 {
@@ -71,7 +72,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
 
         public Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid authorizationId, TimeSpan timeSpan, Func<string, TResult> success, Func<string, TResult> failure)
         {
-            var voucherProviderString = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Voucher.provider"];
+            var voucherProviderString =  CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Voucher.provider");
             var voucherProviderUri = new Uri(voucherProviderString);
             return Credentials.CreateVoucherAsync(authorizationId, voucherProviderUri, timeSpan,
                 (token) => success(token), failure);
@@ -82,7 +83,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             Func<Uri, TResult> alreadyExists,
             Func<string, TResult> failure)
         {
-            var implicitProviderString = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Implicit.provider"];
+            var implicitProviderString =  CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Implicit.provider");
             var implicitProviderUri = new Uri(implicitProviderString);
             return Credentials.CreateImplicitAsync(authorizationId, implicitProviderUri, username, password,
                 success,
@@ -93,7 +94,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         public Task<TResult> UpdateCredentialImplicitAsync<TResult>(Guid authorizationId, string username, string password,
           Func<TResult> success, Func<string, TResult> failure)
         {
-            var implicitProviderString = ConfigurationManager.AppSettings["BlackbarLabs.Security.CredentialProvider.Implicit.provider"];
+            var implicitProviderString =  CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Implicit.provider");
             var implicitProviderUri = new Uri(implicitProviderString);
             return Credentials.UpdateImplicitAsync(authorizationId, implicitProviderUri, username, password,
                 success, failure);
