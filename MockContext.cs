@@ -74,7 +74,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             return Task.FromResult(onSuccess());
         }
 
-        private static string GetToken(Guid authId)
+        public static string GetToken(Guid authId)
         {
             var claimsDefault = (IEnumerable<Claim>)new[] {
                 new Claim(ClaimIds.Session, Guid.NewGuid().ToString()),
