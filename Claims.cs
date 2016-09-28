@@ -98,14 +98,14 @@ namespace BlackBarLabs.Security.Authorization
         
         private static TResult GetRequest<TResult>(Func<WebRequest, TResult> callback)
         {
-            var authServerLocation =  CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
+            var authServerLocation = Microsoft.Azure.CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
             var webRequest = WebRequest.Create(authServerLocation + "/api/Claim");
             return callback(webRequest);
         }
 
         private static TResult GetRequest<TQuery, TResult>(TQuery query, Func<WebRequest, TResult> callback)
         {
-            var authServerLocation =  CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
+            var authServerLocation = Microsoft.Azure.CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
             
             var uriBuilder = new UriBuilder(authServerLocation);
             uriBuilder.Path = "/api/Claim";

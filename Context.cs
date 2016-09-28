@@ -72,7 +72,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
 
         public Task<TResult> CreateCredentialVoucherAsync<TResult>(Guid authorizationId, TimeSpan timeSpan, Func<string, TResult> success, Func<string, TResult> failure)
         {
-            var voucherProviderString =  CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Voucher.provider");
+            var voucherProviderString = Microsoft.Azure.CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Voucher.provider");
             var voucherProviderUri = new Uri(voucherProviderString);
             return Credentials.CreateVoucherAsync(authorizationId, voucherProviderUri, timeSpan,
                 (token) => success(token), failure);
@@ -83,7 +83,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
             Func<Uri, TResult> alreadyExists,
             Func<string, TResult> failure)
         {
-            var implicitProviderString =  CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Implicit.provider");
+            var implicitProviderString = Microsoft.Azure.CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Implicit.provider");
             var implicitProviderUri = new Uri(implicitProviderString);
             return Credentials.CreateImplicitAsync(authorizationId, implicitProviderUri, username, password,
                 success,
@@ -94,7 +94,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         public Task<TResult> UpdateCredentialImplicitAsync<TResult>(Guid authorizationId, string username, string password,
           Func<TResult> success, Func<string, TResult> failure)
         {
-            var implicitProviderString =  CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Implicit.provider");
+            var implicitProviderString = Microsoft.Azure.CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Implicit.provider");
             var implicitProviderUri = new Uri(implicitProviderString);
             return Credentials.UpdateImplicitAsync(authorizationId, implicitProviderUri, username, password,
                 success, failure);

@@ -33,7 +33,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
 
         private static TResult GetRequest<TResult>(Func<WebRequest, TResult> callback)
         {
-            var authServerLocation =  CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
+            var authServerLocation = Microsoft.Azure.CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
             var webRequest = WebRequest.Create(authServerLocation + "/api/Session");
             return callback(webRequest);
         }
@@ -64,7 +64,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         public async static Task<TResult> CreateWithVoucherAsync<TResult>(Guid authId, string authToken,
             Func<string, string, TResult> success, Func<string, TResult> failure)
         {
-            var providerId =  CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Voucher.provider").ToUri();
+            var providerId = Microsoft.Azure.CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Voucher.provider").ToUri();
 
             var credentialVoucher = new Credentials.Credential
             {
@@ -88,7 +88,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
         public async static Task<TResult> CreateWithImplicitAsync<TResult>(string username, string password,
             Func<string, string, TResult> success, Func<string, TResult> failure)
         {
-            var providerId =  CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Implicit.provider").ToUri();
+            var providerId = Microsoft.Azure.CloudConfigurationManager.GetSetting("BlackbarLabs.Security.CredentialProvider.Implicit.provider").ToUri();
 
             var credentialImplicit = new Credentials.Credential
             {

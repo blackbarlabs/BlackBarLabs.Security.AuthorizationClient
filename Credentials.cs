@@ -42,7 +42,7 @@ namespace BlackBarLabs.Security.AuthorizationClient
 
         private static WebRequest GetRequest()
         {
-            var authServerLocation =  CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
+            var authServerLocation = Microsoft.Azure.CloudConfigurationManager.GetSetting("BlackBarLabs.Security.AuthorizationClient.ServerUrl");
             var webRequest = WebRequest.Create(authServerLocation + "/api/Credential");
             return webRequest;
         }
