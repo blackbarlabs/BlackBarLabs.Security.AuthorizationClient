@@ -83,9 +83,11 @@ namespace BlackBarLabs.Security.AuthorizationClient
                 .Where(claim => claim.Value.Item1 == authId)
                 .Select(claim => new System.Security.Claims.Claim(claim.Value.Item2.AbsoluteUri, claim.Value.Item3))
                 .Concat(claimsDefault);
-            var jwtToken = BlackBarLabs.Security.Tokens.JwtTools.CreateToken(Guid.NewGuid().ToString(),
-                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow + TimeSpan.FromDays(1.0),
-                claims,
+            var jwtToken = BlackBarLabs.Security.Tokens.JwtTools.CreateToken(Guid.NewGuid(), authId,
+                new Uri("http://exapmle.com"), TimeSpan.FromDays(1.0),
+                (token) => token,
+                (setting) => string.Empty,
+                (setting, issue) => string.Empty,
                 "AuthServer.issuer",
                 "AuthServer.key");
             return jwtToken;
