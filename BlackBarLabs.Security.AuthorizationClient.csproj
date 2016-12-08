@@ -102,10 +102,6 @@
       <Project>{73088f1b-3aca-476b-aa45-b7d6660f1c73}</Project>
       <Name>BlackBarLabs.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BlackBarLabs.Security.Authorization\BlackBarLabs.Security.Authorization.csproj">
-      <Project>{6e009bb4-a644-43a5-95c7-0a3918f61b04}</Project>
-      <Name>BlackBarLabs.Security.Authorization</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
